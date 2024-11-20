@@ -1,0 +1,11 @@
+/FSP_project/lyceum/.env
+/.idea/
+/venv/
+/__pycache__/
+/.vscode/
+/about/__pycache__/
+/catalog/__pycache__/
+/hamepage/__pycache__/
+/FSP_jestkie_programisty/__pycache__/
+/FSP_project/FSP_jestkie_programisty/db.sqlite3
+/FSP_jestkie_programisty/venv_my/
