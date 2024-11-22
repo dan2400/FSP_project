@@ -1,0 +1,14 @@
+{% with request.resolver_match.view_name as view_name %}
+<li class="list-group-item">
+    <a class="list-group-item list-group-item-action" href="{% url 'catalog:item_detail' item.pk %}">
+        <div class="row">{{ item.name }}</div>
+        {% if view_name != 'catalog:item_list' %}
+        <div class="row">{{ item.category.name }}</div>
+        {% endif %}
+        <div class="row">{{ item.text | truncatewords_html:10 | safe }}</div>
+        {% for tag in item.tags.all %}
+            <div class="row">{{tag.name}}</div>
+        {% endfor %}
+    </a>
+</li>
+{% endwith %}

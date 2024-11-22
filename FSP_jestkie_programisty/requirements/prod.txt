@@ -1,0 +1,10 @@
+asgiref==3.8.1
+Django==4.2.9
+django-ckeditor-5==0.2.15
+django-cleanup==9.0.0
+pillow==11.0.0
+python-dotenv==1.0.1
+pytz==2024.2
+sorl-thumbnail==12.11.0
+sqlparse==0.5.1
+transliterate==1.10.2

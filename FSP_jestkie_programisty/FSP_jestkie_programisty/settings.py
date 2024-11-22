@@ -12,31 +12,42 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
+import os
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+def load_bool(name, default):
+    env_value = os.getenv(name, str(default).lower())
+    return env_value in ('true', 'yes', '1', 'y', 't')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-a6b-dje$#5h@10@$m%4th9ir)@5yfhlxhm%$2xkk9+^l2iuc#&"
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+MAIL = os.getenv('DJANGO_MAIL', 'no-reply@feedback.ru')
 
-ALLOWED_HOSTS = []
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', default='fds')
 
+DEBUG = load_bool('DJANGO_DEBUG', True)
+
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '*').split(',')
 
 # Application definition
 
 INSTALLED_APPS = [
+    "about.apps.AboutConfig",
+    "catalog.apps.CatalogConfig",
+    "feedback.apps.FeedbackConfig",
+    "main.apps.MainConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'django_ckeditor_5',
+    'sorl.thumbnail',
+    'django_cleanup.apps.CleanupConfig',
 ]
 
 MIDDLEWARE = [
@@ -49,12 +60,18 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+if DEBUG:
+    INSTALLED_APPS.append('debug_toolbar')
+    MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
+
 ROOT_URLCONF = "FSP_jestkie_programisty.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            BASE_DIR / 'templates',
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -74,11 +91,16 @@ WSGI_APPLICATION = "FSP_jestkie_programisty.wsgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'fsp',
+        'USER': 'dan24_00',
+        'PASSWORD': 'lolkek228',
+        'HOST': 'localhost',
+        'PORT': 5432,
     }
 }
+
 
 
 # Password validation
@@ -103,7 +125,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "ru"
 
 TIME_ZONE = "UTC"
 
@@ -112,12 +134,158 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
+LANGUAGES = [
+    ('ru', 'Russian'),
+]
 
-STATIC_URL = "static/"
+LOCALE_PATHS = [BASE_DIR / 'locale']
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+STATIC_URL = '/static/'
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+STATICFILES_DIRS = [
+    BASE_DIR / 'static_dev',
+]
+
+
+STATIC_ROOT = BASE_DIR / '/static/'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_ROOT = BASE_DIR / 'media'
+
+MEDIA_URL = '/media/'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CKEDITOR_BASEPATH = '/static/ckeditor/ckeditor/'
+
+CKEDITOR_UPLOAD_PATH = 'uploads/'
+
+CKEDITOR_5_CONFIGS = {
+    'default': {
+        'toolbar': [
+            'heading',
+            '|',
+            'bold',
+            'italic',
+            'link',
+            'bulletedList',
+            'numberedList',
+            'blockQuote',
+        ],
+    },
+    'extends': {
+        'blockToolbar': [
+            'paragraph',
+            'heading1',
+            'heading2',
+            'heading3',
+            '|',
+            'bulletedList',
+            'numberedList',
+            '|',
+            'blockQuote',
+        ],
+        'toolbar': [
+            'heading',
+            '|',
+            'outdent',
+            'indent',
+            '|',
+            'bold',
+            'italic',
+            'link',
+            'underline',
+            'strikethrough',
+            'code',
+            'subscript',
+            'superscript',
+            'highlight',
+            '|',
+            'codeBlock',
+            'sourceEditing',
+            'insertImage',
+            'bulletedList',
+            'numberedList',
+            'todoList',
+            '|',
+            'blockQuote',
+            'imageUpload',
+            '|',
+            'fontSize',
+            'fontFamily',
+            'fontColor',
+            'fontBackgroundColor',
+            'mediaEmbed',
+            'removeFormat',
+            'insertTable',
+        ],
+        'image': {
+            'toolbar': [
+                'imageTextAlternative',
+                '|',
+                'imageStyle:alignLeft',
+                'imageStyle:alignRight',
+                'imageStyle:alignCenter',
+                'imageStyle:side',
+                '|',
+            ],
+            'styles': [
+                'full',
+                'side',
+                'alignLeft',
+                'alignRight',
+                'alignCenter',
+            ],
+        },
+        'table': {
+            'contentToolbar': [
+                'tableColumn',
+                'tableRow',
+                'mergeTableCells',
+                'tableProperties',
+                'tableCellProperties',
+            ],
+        },
+        'heading': {
+            'options': [
+                {
+                    'model': 'paragraph',
+                    'title': 'Paragraph',
+                    'class': 'ck-heading_paragraph',
+                },
+                {
+                    'model': 'heading1',
+                    'view': 'h1',
+                    'title': 'Heading 1',
+                    'class': 'ck-heading_heading1',
+                },
+                {
+                    'model': 'heading2',
+                    'view': 'h2',
+                    'title': 'Heading 2',
+                    'class': 'ck-heading_heading2',
+                },
+                {
+                    'model': 'heading3',
+                    'view': 'h3',
+                    'title': 'Heading 3',
+                    'class': 'ck-heading_heading3',
+                },
+            ],
+        },
+    },
+    'list': {
+        'properties': {
+            'styles': 'true',
+            'startIndex': 'true',
+            'reversed': 'true',
+        },
+    },
+}
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+
+EMAIL_FILE_PATH = BASE_DIR / 'send_mail/'
+
+__all__ = []

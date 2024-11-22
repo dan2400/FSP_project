@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Каталог{% endblock %}
+{% block content %}
+    <h1>Каталог</h1>
+    {% for item in items %}
+        {% ifchanged item.category.name %}
+            <h2>{{ item.category.name }}</h2>
+        {% endifchanged %}
+        {% include "includes/item_card.html" with item=item %}
+    {% endfor %}
+{% endblock %}

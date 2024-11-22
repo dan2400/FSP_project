@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Обратная связь{% endblock %}
+{% block content %}
+<h1>Обратная связь</h1>
+{% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-success" role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+        {% with form=feedback_auther %}
+            {% include "includes/form.html" %}
+        {% endwith %}
+        {% with form=feedback_form %}
+            {% include "includes/form.html" %}
+        {% endwith %}
+        {% with form=files_form %}
+            {% include "includes/form.html" %}
+        {% endwith %}
+
+    <input type="submit" value="Отправить">
+</form>
+{% endblock %}

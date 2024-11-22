@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Подробное описание{% endblock %}
+{% block content %}
+    <h1>Подробное описание товарв</h1>
+        <h2>{{ item.name }}</h2>
+        <img src="{{ item.main_image.image.url }}">
+        <p>{{ item.text }}</p>
+        <p>{{ item.category.name }}</p>
+        {% for tag in item.tags.all %}
+            <p>{{ tag.name }}</p>
+        {% endfor %}
+        {% for image in item.images.all %}
+            <img src="{{ image.image.url }}">
+        {% endfor %}
+{% endblock %}
