@@ -20,7 +20,6 @@ class Core(django.db.models.Model):
         help_text='Имя объекта',
         max_length=150,
     )
-    is_published = django.db.models.BooleanField('опубликовано', default=True)
 
     canonical_name = django.db.models.CharField(
         max_length=150,

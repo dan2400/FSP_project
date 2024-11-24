@@ -1,14 +1,9 @@
-import uuid
-
 import django.core.exceptions
 import django.core.validators
 import django.db.models
 import django.utils.safestring
 import django.utils.timezone
 import django_ckeditor_5.fields
-import sorl.thumbnail
-
-import catalog.validators
 import core.models
 
 
@@ -16,24 +11,101 @@ def item_directory_path(instance, filename):
     return f'catalog/{instance.item.id}/{uuid.uuid4()}-{filename}'
 
 
-class Category(core.models.Core):
-    slug = django.db.models.SlugField(
-        'слаг',
-        unique=True,
-        max_length=200,
-        help_text='Только латинцкие буквы, цифры и знааки _ и -',
+class Town(core.models.Core):
+    params = django.db.models.CharField(
+        unique=False,
+        null=True,
     )
-    weight = django.db.models.IntegerField(
-        'порядок (чем меньше, тем выше)',
-        default=100,
+    class Meta:
+        verbose_name = 'Город'
+        verbose_name_plural = 'Города'
+
+        def __str__(self):
+            return self.name[:15]
+
+
+class Subject(core.models.Core):
+    town = django.db.models.ManyToManyField(Town)
+    class Meta:
+        verbose_name = 'Субъект'
+        verbose_name_plural = 'Субъекты'
+
+        def __str__(self):
+            return self.name[:15]
+
+
+class Country(core.models.Core):
+    subject = django.db.models.ManyToManyField(Subject)
+    class Meta:
+        verbose_name = 'Страна'
+        verbose_name_plural = 'Страны'
+
+        def __str__(self):
+            return self.name[:15]
+
+
+class Gender(core.models.Core):
+    class Meta:
+        verbose_name = 'Пол'
+        verbose_name_plural = 'Пол'
+
+        def __str__(self):
+            return self.name[:15]
+
+
+class Age(core.models.Core):
+    class Meta:
+        verbose_name = 'Возраст'
+        verbose_name_plural = 'Возраста'
+
+        def __str__(self):
+            return self.name[:15]
+
+
+class Mass(core.models.Core):
+    mass_start = django.db.models.IntegerField(
+        unique=False,
+        null=True,
         validators=[
-            django.core.validators.MinValueValidator(1),
-            django.core.validators.MaxValueValidator(32767),
+            django.core.validators.MinValueValidator(10),
+            django.core.validators.MaxValueValidator(1000),
         ],
     )
+    mass_end = django.db.models.IntegerField(
+        unique=False,
+        null=True,
+        validators=[
+            django.core.validators.MinValueValidator(10),
+            django.core.validators.MaxValueValidator(700),
+        ],
+    )
+    class Meta:
+        verbose_name = 'Весовая категория'
+        verbose_name_plural = 'Весовые котегории'
 
-    def __str__(self):
-        return self.name[:15]
+        def __str__(self):
+            return self.name[:15]
+
+
+class Genage(core.models.Core):
+    age = django.db.models.ForeignKey(
+        'age',
+        on_delete=django.db.models.CASCADE,
+        verbose_name='Возраст',
+        help_text='Выберите Возраст',
+        related_name='catalog_age',
+        unique=False,
+        null=True,
+    )
+    gender = django.db.models.ForeignKey(
+        'gender',
+        on_delete=django.db.models.CASCADE,
+        verbose_name='Пол',
+        help_text='Выберите Пол',
+        related_name='catalog_gen',
+        unique=False,
+        null=True,
+    )
 
     class Meta:
         verbose_name = 'категория'
@@ -43,20 +115,16 @@ class Category(core.models.Core):
             return self.name[:15]
 
 
-class Tag(core.models.Core):
-    slug = django.db.models.SlugField(
-        'Слаг',
-        unique=True,
-        max_length=200,
-        help_text='Только латинцкие буквы, цифры и знааки _ и -',
-    )
+class Discipline(core.models.Core):
+    gen_age = django.db.models.ManyToManyField(Genage)
+    mass_cat = django.db.models.ManyToManyField(Mass)
 
     def __str__(self):
         return self.name[:15]
 
     class Meta:
-        verbose_name = 'тег'
-        verbose_name_plural = 'теги'
+        verbose_name = 'категория'
+        verbose_name_plural = 'категории'
 
         def __str__(self):
             return self.name[:15]
@@ -81,6 +149,52 @@ def filter_select(obj):
             ),
         )
     )
+
+
+class Range_m(core.models.Core):
+    class Meta:
+        verbose_name = 'Маштаб'
+        verbose_name_plural = 'Маштабы'
+
+        def __str__(self):
+            return self.name[:15]
+
+
+class Sport(core.models.Core):
+    discipline = django.db.models.ManyToManyField(
+        'discipline',
+        verbose_name='Дисциплина',
+        help_text='Выберите дисциплину',
+        related_name='catalog_sport',
+        unique=False,
+    )
+
+    def __str__(self):
+        return self.name[:15]
+
+    class Meta:
+        verbose_name = 'категория'
+        verbose_name_plural = 'категории'
+
+
+class Time(core.models.Core):
+    start = django.db.models.DateTimeField(
+        'время начала',
+        unique=False,
+        null=True,
+    )
+    end = django.db.models.DateTimeField(
+        'время конца',
+        unique=False,
+        null=True,
+    )
+
+    def __str__(self):
+        return self.name[:15]
+
+    class Meta:
+        verbose_name = 'время'
+        verbose_name_plural = 'времена'
 
 
 def order_only(obj):
@@ -120,18 +234,12 @@ class ItemManager(django.db.models.Manager):
 class Item(core.models.Core):
     objects = ItemManager()
 
-    discipline = django.db.models.ForeignKey(
-        'category',
+    sport = django.db.models.ForeignKey(
+        'discipline',
         on_delete=django.db.models.CASCADE,
         verbose_name='Дисциплина',
         help_text='Выберите дисциплину',
-        related_name='catalog_disciplene',
-        unique=False,
-        null=True,
-    )
-    program = django_ckeditor_5.fields.CKEditor5Field(
-        'программа',
-        help_text=('Опишите что будет происходить'),
+        related_name='catalog_item',
         unique=False,
         null=True,
     )
@@ -146,7 +254,7 @@ class Item(core.models.Core):
         null=True,
     )
     country = django.db.models.ForeignKey(
-        'category',
+        'country',
         on_delete=django.db.models.CASCADE,
         verbose_name='Страна',
         help_text='Выберите Страна',
@@ -155,7 +263,7 @@ class Item(core.models.Core):
         null=True,
     )
     subject = django.db.models.ForeignKey(
-        'category',
+        'subject',
         on_delete=django.db.models.CASCADE,
         verbose_name='Субъект',
         help_text='Выберите субект',
@@ -164,7 +272,7 @@ class Item(core.models.Core):
         null=True,
     )
     town = django.db.models.ForeignKey(
-        'category',
+        'town',
         on_delete=django.db.models.CASCADE,
         verbose_name='Город',
         help_text='Выберите город',
@@ -175,21 +283,44 @@ class Item(core.models.Core):
     number = django.db.models.IntegerField(
         unique=False,
         null=True,
+        validators=[
+            django.core.validators.MinValueValidator(10),
+        ]
     )
-
+    served = django.db.models.IntegerField(
+        unique=False,
+        null=True,
+        validators=[
+            django.core.validators.MaxValueValidator(700),
+            django.core.validators.MinValueValidator(10),
+        ]
+    )
+    time = django.db.models.ForeignKey(
+        'time',
+        on_delete=django.db.models.CASCADE,
+        verbose_name='Время',
+        help_text='Выберите Время',
+        related_name='catalog_time',
+        unique=False,
+        null=True,
+    )
+    alert = django_ckeditor_5.fields.CKEditor5Field(
+        'предупреждение',
+        help_text=('Опишите что нужно делать'),
+        unique=False,
+        null=True,
+    )
+    range_m = django.db.models.ForeignKey(
+        'range_m',
+        on_delete=django.db.models.CASCADE,
+        verbose_name='Страна',
+        help_text='Выберите Страна',
+        related_name='catalog_range_m',
+        unique=False,
+        null=True,
+    )
     def __str__(self):
         return self.name[:15]
-
-    def image_tmb(self):
-        if self.main_image.image:
-            return django.utils.safestring.mark_safe(
-                f'<img src="{self.main_image.get_image_50x50.url}">',
-            )
-
-        return 'Нет изображения'
-
-    image_tmb.short_description = 'превью'
-    image_tmb.allow_tags = True
 
     class Meta:
         verbose_name = 'мероприятие'
@@ -200,76 +331,9 @@ class Item(core.models.Core):
             return self.name[:15]
 
 
-class ImageBaseModel(django.db.models.Model):
-    image = django.db.models.ImageField(
-        'изображение',
-        upload_to=item_directory_path,
-        default=None,
-    )
-
-    def get_image_300x300(self):
-        return sorl.thumbnail.get_thumbnail(
-            self.image,
-            '300x300',
-            crop='center',
-            quality=51,
-        )
-
-    @property
-    def get_image_50x50(self):
-        return sorl.thumbnail.get_thumbnail(
-            self.image,
-            '50x50',
-            crop='center',
-            quality=51,
-        )
-
-    def __str__(self):
-        return self.item.name
-
-    class Meta:
-        abstract = True
-
-
-class MainImage(ImageBaseModel):
-    item = django.db.models.OneToOneField(
-        Item,
-        on_delete=django.db.models.CASCADE,
-        related_name='main_image',
-    )
-
-    def __str__(self):
-        return self.item.name
-
-    class Meta:
-        verbose_name = 'главное изображение'
-        verbose_name_plural = 'главные изображения'
-
-        def __str__(self):
-            return self.name[:15]
-
-
-class Image(ImageBaseModel):
-    item = django.db.models.ForeignKey(
-        Item,
-        on_delete=django.db.models.CASCADE,
-        related_name='images',
-    )
-
-    class Meta:
-        verbose_name = 'фото'
-        verbose_name_plural = 'фото'
-
-        def __str__(self):
-            return self.name[:15]
-
-
 __all__ = [
     'Category',
     'Tag',
     'Item',
-    'ImageBaseModel',
-    'MainImage',
-    'Image',
-    'ItemManager',
+    'Country'
 ]

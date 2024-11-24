@@ -1,0 +1,32 @@
+<html>
+    <h1>логин</h1>
+    {% if field.errors %}
+        {% for field in form %}
+            {% for error in field.errors %}
+            {{ error|escape }}
+            {% endfor %}
+        {% endfor %}
+    {% for error in form.non_field_errors %}
+        {{ error|escape }}
+    {% endfor %}
+    {% endif %}
+    <form method="post" action="">
+    {% csrf_token %}
+    {% for field in form %}
+        <label for="{{ field.id_for_label }}">
+            {{ field.label }}
+                {% if field.field.required %}
+                    <span>*</span>
+                {% endif %}
+        </label>
+        {{ field }}
+        {% if field.help_text %}
+            <small id="{{ field.id_for_label }}-help">
+                {{ field.help_text|safe }}
+            </small>
+        {% endif %}
+    {% endfor %}
+
+    <button type="submit">Войти</button>
+        <a href="{% url 'auth:password_reset' %}">Забыли пароль?</a>
+</html>

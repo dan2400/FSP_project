@@ -1,7 +1,9 @@
 Django==4.2.9
+django-appconf==1.0.6
 django-ckeditor-5==0.2.15
 django-cleanup==9.0.0
 django-debug-toolbar==4.4.6
+django-user-accounts==3.3.2
 flake8-clean-block==0.1.2
 flake8-commas==4.0.0
 flake8-dunder-all==0.4.1
