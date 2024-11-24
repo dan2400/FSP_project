@@ -10,3 +10,5 @@ python3 manage.py migrate
 ```
 ![JPG IMAGE](ER.jpg)
 для парсинга есть url parse/
+по url/login auth доступен вход
+и других
