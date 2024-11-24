@@ -14,6 +14,10 @@ from pathlib import Path
 
 import os
 
+import dotenv
+
+dotenv.load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -104,9 +108,9 @@ WSGI_APPLICATION = 'FSP_jestkie_programisty.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('NAME', 'fsp'),
-        'USER': os.getenv('USER', 'dan24_00'),
-        'PASSWORD': os.getenv('PASSWORD', 'lolkek228'),
+        'NAME': os.getenv('NAME', 'name'),
+        'USER': os.getenv('USER', 'user'),
+        'PASSWORD': os.getenv('PASSWORD', 'passw'),
         'HOST': 'localhost',
         'PORT': 5432,
     }

@@ -516,7 +516,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="item",
             name="time",
-            field=models.DateTimeField(null=True),
+            field=models.IntegerField(null=True),
         ),
         migrations.DeleteModel(
             name="Category",
