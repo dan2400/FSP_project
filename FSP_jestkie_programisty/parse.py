@@ -1,11 +1,11 @@
 import requests
 import fitz
 
-import catalog.models
+#import catalog.models
 
-import dotenv
+#import dotenv
 
-dotenv.load_dotenv()
+#dotenv.load_dotenv()
 
 def check_new_block(s):
     try:
@@ -110,32 +110,34 @@ for block in new_arr:
         new_sport=False
         sport_name = str(next_sport_name)
 
-def loc(id, lis):
-    if len(lis) == 2:
-        catalog.models.Items.objects.get_or_create(country__name=lis[0], subject__name=lis[1], town__name=lis[1], id=id)
-    else:
-        catalog.models.Items.objects.get_or_create(country__name=lis[0], subject__name=lis[1], town__name=lis[2], id=id)
+print(database)
 
-for item in database:
-    i, created_id = catalog.models.Items.objects.get_or_create(id=item['id'])
-    num, created_num = catalog.models.Items.objects.get_or_create(number=item['participants'], id=i)
-    for sport in item['sport_name']:
-        catalog.models.Items.objects.get_or_create(sport__name=sport, id=i)
-    for discipline in item['discipline']:
-        catalog.models.Items.objects.get_or_create(sport__name=discipline, id=i)
-    if item['date'][0] and item['date'][1]:
-        catalog.models.Items.objects.get_or_create(time__start=item['date'][0], time__end=item['date'][1], id=i)
-    loc(i, item['location'])
-    bl = item['gen_age_block']
-    ak = bl.split()[-2]
-    if '-' in ak:
-        ak = ak.split('-')
-    elif 'от' in ak.lower():
-        ak = (ak, 200)
-    elif 'до' in ak.lower():
-        ak = (0, ak)
-    bl = ' '.join(ak[:-2])
-    for genage in bl.split(', '):
-        catalog.models.Items.objects.get_or_create(genage__name=genage, id=i)
-    catalog.models.Items.objects.get_or_create(genage__age__low=ak[0], genage__age__hight=ak[1], id=i)
+#def loc(id, lis):
+#    if len(lis) == 2:
+#        catalog.models.Items.objects.get_or_create(country__name=lis[0], subject__name=lis[1], town__name=lis[1], id=id)
+#    else:
+#        catalog.models.Items.objects.get_or_create(country__name=lis[0], subject__name=lis[1], town__name=lis[2], id=id)
+
+#for item in database:
+#    i, created_id = catalog.models.Items.objects.get_or_create(id=item['id'])
+#    num, created_num = catalog.models.Items.objects.get_or_create(number=item['participants'], id=i)
+#    for sport in item['sport_name']:
+#        catalog.models.Items.objects.get_or_create(sport__name=sport, id=i)
+#    for discipline in item['discipline']:
+#        catalog.models.Items.objects.get_or_create(sport__name=discipline, id=i)
+#    if item['date'][0] and item['date'][1]:
+#        catalog.models.Items.objects.get_or_create(time__start=item['date'][0], time__end=item['date'][1], id=i)
+#    loc(i, item['location'])
+#    bl = item['gen_age_block']
+#    ak = bl.split()[-2]
+#    if '-' in ak:
+#        ak = ak.split('-')
+#    elif 'от' in ak.lower():
+#        ak = (ak, 200)
+#    elif 'до' in ak.lower():
+#        ak = (0, ak)
+#    bl = ' '.join(ak[:-2])
+#    for genage in bl.split(', '):
+#        catalog.models.Items.objects.get_or_create(genage__name=genage, id=i)
+#    catalog.models.Items.objects.get_or_create(genage__age__low=ak[0], genage__age__hight=ak[1], id=i)
 
