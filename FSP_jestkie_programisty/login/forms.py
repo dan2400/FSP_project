@@ -25,7 +25,7 @@ class UserCreationForm(
 
 class UserChangeForm(
     BootstrapFormMixin,
-    django.contrib.auth.forms.UserCreationForm,
+    django.contrib.auth.forms.UserChangeForm,
 ):
     class Meta(django.contrib.auth.forms.UserChangeForm.Meta):
         fields = (
@@ -41,5 +41,16 @@ class UpdateProfileForm(
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields(
-            login.models.Profile.mass.field.name
+            login.models.Profile.mass.field.name,
         ).disabled = True
+
+        class Meta:
+            model = login.models.Profile
+            fields = (
+            login.models.Profile.mass.field.name,
+            login.models.Profile.age.field.name,
+            login.models.Profile.gender.field.name,
+            login.models.Profile.discipline.field.name,
+            login.models.Profile.records.field.name,
+            login.models.Profile.image.field.name,
+            )

@@ -1,0 +1,13 @@
+<html>
+    <h1>Готово</h1>
+    {% if field.errors %}
+        {% for field in form %}
+            {% for error in field.errors %}
+            {{ error|escape }}
+            {% endfor %}
+        {% endfor %}
+    {% for error in form.non_field_errors %}
+        {{ error|escape }}
+    {% endfor %}
+    {% endif %}
+</html>

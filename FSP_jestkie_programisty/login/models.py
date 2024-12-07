@@ -54,7 +54,16 @@ class UserManager(django.contrib.auth.models.UserManager):
         return email
 
 
+class User(django.contrib.auth.models.User):
+    object = UserManager()
+
+    class Meta:
+        proxy = True
+
+
 class Profile(django.db.models.Model):
+    object = UserManager()
+
     def image_path(self, filename):
         return f'users/{self.user.id}/{filename}'
 
@@ -62,32 +71,21 @@ class Profile(django.db.models.Model):
         django.contrib.auth.models.User,
         on_delete=django.db.models.CASCADE,
     )
-    age = django.db.models.DateTimeField()
-    gender = django.db.models.ForeignKey(
-        catalog.models.Gender,
-        on_delete=django.db.models.CASCADE,
-        related_name='main_gender',
-    )
-    mass = django.db.models.IntegerField(
-        validators=[
-            django.core.validators.MinValueValidator(10),
-            django.core.validators.MaxValueValidator(1000),
-        ]
-    )
-    town = django.db.models.ForeignKey(
-        catalog.models.Town,
-        on_delete=django.db.models.CASCADE,
-        related_name='main_town',
-    )
-    discipline = django.db.models.ManyToManyField(catalog.models.Discipline)
-    is_active = django.db.models.BooleanField(default=True)
-    records = django.db.models.ManyToManyField(catalog.models.Item)
-
     image = django.db.models.ImageField(
         'изображение',
         upload_to=image_path,
         null=True,
         blank=True,
+        unique=False,
+    )
+    block_date = django.db.models.DateTimeField(
+        'дата блокировки',
+        blank=True,
+        null=True,
+    )
+    attempts_count = django.db.models.PositiveIntegerField(
+        'попыток входа',
+        default=0,
     )
 
     def get_image_300x300(self):
@@ -101,3 +99,16 @@ class Profile(django.db.models.Model):
     class Meta:
         verbose_name = 'Профиль пользователя'
         verbose_name_plural = 'Профили пользователей'
+
+
+class AddRequest(django.db.models.Model):
+    object = UserManager()
+    email = django.db.models.EmailField()
+
+    class Meta:
+        verbose_name = 'запрос'
+        verbose_name_plural = 'запросы'
+        default_related_name = 'addrequest'
+
+        def __str__(self):
+            return self.name[:15]

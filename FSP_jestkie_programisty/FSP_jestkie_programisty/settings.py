@@ -28,7 +28,7 @@ def load_bool(name, default):
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-MAIL = os.getenv('DJANGO_MAIL', 'no-reply@feedback.ru')
+MAIL = os.getenv('EMAIL', 'no-reply@feedback.ru')
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', default='fds')
 
@@ -36,9 +36,22 @@ DEBUG = load_bool('DJANGO_DEBUG', True)
 
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '*').split(',')
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+
+EMAIL_HOST_USER = os.getenv('EMAIL', 'yandex@yandex.ru')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD', 'somepassword')
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SERVER_EMAIL = EMAIL_HOST_USER
+EMAIL_ADMIN = EMAIL_HOST_USER
+
 # Application definition
 
 INSTALLED_APPS = [
+    'login.apps.LoginConfig',
     'about.apps.AboutConfig',
     'catalog.apps.CatalogConfig',
     'feedback.apps.FeedbackConfig',
@@ -47,14 +60,16 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',
-    'account',
     'django_ckeditor_5',
+    'account',
     'sorl.thumbnail',
     'django_cleanup.apps.CleanupConfig',
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -68,7 +83,6 @@ MIDDLEWARE = [
     'account.middleware.TimezoneMiddleware',
 ]
 
-SITE_ID = 1
 
 if DEBUG:
     INSTALLED_APPS.append('debug_toolbar')
@@ -100,6 +114,8 @@ ACCOUNT_EMAIL_UNIQUE = True
 ACCOUNT_EMAIL_CONFIRMATION_REQUIRED = True
 
 WSGI_APPLICATION = 'FSP_jestkie_programisty.wsgi.application'
+
+MAX_AUTH_ATTEMPTS = 3
 
 
 # Database
