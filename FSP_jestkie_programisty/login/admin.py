@@ -8,8 +8,18 @@ class ProfileInlined(django.contrib.admin.TabularInline):
     can_delete = False
 
 
+class LoginFiles(django.contrib.admin.TabularInline):
+
+    model = login.models.LoginFile
+    fields = (login.models.LoginFile.file.field.name,)
+
+
+
 class UserAdmin(django.contrib.auth.admin.UserAdmin):
-    inlines = (ProfileInlined,)
+    inlines = (
+        ProfileInlined,
+        LoginFiles,
+    )
 
 
 django.contrib.admin.site.unregister(

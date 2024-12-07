@@ -1,72 +1,50 @@
 from django.contrib import admin
+from .models import SportProgrammingKind, CentralFsp, Region, CompetitionLevel, Competition, RegionalCompetition, NationwideCompetition, SportProgrammingType, Representative, Team, Athlete
 
-import catalog.models
+@admin.register(CentralFsp)
+class CentralFspAdmin(admin.ModelAdmin):
+    list_display = ['name', 'description']
 
+@admin.register(Region)
+class RegionAdmin(admin.ModelAdmin):
+    list_display = ['name', 'central_fsp', 'representative_name']
 
-@admin.register(catalog.models.Item)
-class ItemAdmin(admin.ModelAdmin):
-    list_display = (
-        catalog.models.Item.name.field.name,
-        catalog.models.Item.sport.field.name,
-        catalog.models.Item.country.field.name,
-        catalog.models.Item.subject.field.name,
-        catalog.models.Item.town.field.name,
-        catalog.models.Item.location.field.name,
-        catalog.models.Item.time.field.name,
-        catalog.models.Item.alert.field.name,
-    )
-    list_display_links = (catalog.models.Item.name.field.name,)
+@admin.register(CompetitionLevel)
+class CompetitionLevelAdmin(admin.ModelAdmin):
+    list_display = ['level_name']
 
+@admin.register(Competition)
+class CompetitionAdmin(admin.ModelAdmin):
+    list_display = ['name', 'level', 'description']
 
-@admin.register(catalog.models.Sport)
-class SportAdmin(admin.ModelAdmin):
-    list_display = (catalog.models.Sport.name.field.name,)
+@admin.register(RegionalCompetition)
+class RegionalCompetitionAdmin(admin.ModelAdmin):
+    list_display = ['competition', 'date', 'city', 'region']
 
+@admin.register(NationwideCompetition)
+class NationwideCompetitionAdmin(admin.ModelAdmin):
+    list_display = ['competition', 'date', 'city', 'region']
 
-@admin.register(catalog.models.Discipline)
-class DisciplineAdmin(admin.ModelAdmin):
-    list_display = (catalog.models.Discipline.name.field.name,)
+@admin.register(Representative)
+class RepresentativeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'email', 'region']
 
+@admin.register(Team)
+class TeamAdmin(admin.ModelAdmin):
+    list_display = ['name', 'number_of_members', 'region', 'competition']
 
-@admin.register(catalog.models.Genage)
-class GenageAdmin(admin.ModelAdmin):
-    list_display = (catalog.models.Genage.name.field.name,)
+@admin.register(Athlete)
+class AthleteAdmin(admin.ModelAdmin):
+    list_display = ['name', 'email', 'registration_date', 'age', 'team']
 
+@admin.register(SportProgrammingKind)
+class SportProgrammingKindAdmin(admin.ModelAdmin):
+    list_display = ('name', 'description')
+    search_fields = ('name',)
 
-@admin.register(catalog.models.Mass)
-class MassAdmin(admin.ModelAdmin):
-    list_display = (catalog.models.Mass.name.field.name,)
-
-
-@admin.register(catalog.models.Gender)
-class GenderAdmin(admin.ModelAdmin):
-    list_display = (catalog.models.Gender.name.field.name,)
-
-
-@admin.register(catalog.models.Country)
-class CountryAdmin(admin.ModelAdmin):
-    list_display = (catalog.models.Country.name.field.name,)
-
-
-@admin.register(catalog.models.Subject)
-class SubjectAdmin(admin.ModelAdmin):
-    list_display = (catalog.models.Subject.name.field.name,)
-
-
-@admin.register(catalog.models.Town)
-class TownAdmin(admin.ModelAdmin):
-    list_display = (catalog.models.Town.name.field.name,)
-
-
-@admin.register(catalog.models.Range_m)
-class Range_mAdmin(admin.ModelAdmin):
-    list_display = (catalog.models.Range_m.name.field.name,)
-
-
-__all__ = [
-    'MainImage',
-    'Image',
-    'ItemAdmin',
-    'CategoryAdmin',
-    'TagAdmin',
-]
+@admin.register(SportProgrammingType)
+class SportProgrammingTypeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'regional_competition', 'nationwide_competition')
+    search_fields = ('name',)
+    list_filter = ('regional_competition', 'nationwide_competition')
+    filter_vertical = ('programming_kinds',)

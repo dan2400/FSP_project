@@ -2,6 +2,7 @@ import django.conf
 import django.contrib.auth.backends
 import django.urls
 import django.utils
+import django.db
 
 import login.models
 
@@ -14,6 +15,12 @@ class AuthBackend(django.contrib.auth.backends.ModelBackend):
                 user = login.models.User.objects.get(username=username)
         except login.models.User.DoesNotExist:
             return None
+        try:
+            _ = user.profile
+        except login.models.Profile.DoesNotExist:
+            profile = login.models.Profile(user=user)
+            profile.save()
+
         else:
             if user.check_password(password):
                 user.profile.attempts_count = 0

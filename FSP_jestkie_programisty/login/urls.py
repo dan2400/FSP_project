@@ -73,4 +73,24 @@ urlpatterns = [
         login.views.signup,
         name='signup',
     ),
+    django.urls.path(
+        'confirm/<int:pk>',
+        login.views.confirm,
+        name='confirm',
+    ),
+    django.urls.path(
+        'reactivate/<int:pk>/',
+        login.views.reactivate,
+        name='reactivate',
+    ),
+    django.urls.path(
+        'user/list/',
+        login.views.user_list,
+        name='user_list'
+    ),
+    django.urls.path(
+        'user/{int:pk}',
+        login.views.user_detail,
+        name='user_detail',
+    ),
 ]

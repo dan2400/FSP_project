@@ -4,8 +4,6 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 
-
-
 def main(request):
     template = 'main/index.html'
     context = {

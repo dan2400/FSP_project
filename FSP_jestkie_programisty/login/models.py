@@ -3,6 +3,7 @@ import sys
 import django.contrib.auth.models
 import django.db.models
 import sorl.thumbnail
+import uuid
 
 import catalog.models
 
@@ -113,3 +114,26 @@ class AddRequest(django.db.models.Model):
 
         def __str__(self):
             return self.name[:15]
+
+
+class LoginFile(django.db.models.Model):
+    def get_path(self, filename):
+        return f'uploads/{self.user_id}/{uuid.uuid4()}_{filename}'
+
+    user = django.db.models.OneToOneField(
+        django.contrib.auth.models.User,
+        related_name='files',
+        on_delete=django.db.models.CASCADE,
+    )
+
+    file = django.db.models.FileField(
+        'файл',
+        upload_to=get_path,
+        blank=True,
+        null=True,
+    )
+
+
+__all__ = [
+    'Feedback',
+]

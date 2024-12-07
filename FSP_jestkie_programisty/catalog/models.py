@@ -1,339 +1,120 @@
-import django.core.exceptions
-import django.core.validators
-import django.db.models
-import django.utils.safestring
-import django.utils.timezone
-import django_ckeditor_5.fields
-import core.models
-
+from django.db import models
 
 def item_directory_path(instance, filename):
     return f'catalog/{instance.item.id}/{uuid.uuid4()}-{filename}'
 
-
-class Town(core.models.Core):
-    params = django.db.models.CharField(
-        unique=False,
-        null=True,
-    )
-    class Meta:
-        verbose_name = 'Город'
-        verbose_name_plural = 'Города'
-
-        def __str__(self):
-            return self.name[:15]
-
-
-class Subject(core.models.Core):
-    town = django.db.models.ManyToManyField(Town)
-    class Meta:
-        verbose_name = 'Субъект'
-        verbose_name_plural = 'Субъекты'
-
-        def __str__(self):
-            return self.name[:15]
-
-
-class Country(core.models.Core):
-    subject = django.db.models.ManyToManyField(Subject)
-    class Meta:
-        verbose_name = 'Страна'
-        verbose_name_plural = 'Страны'
-
-        def __str__(self):
-            return self.name[:15]
-
-
-class Gender(core.models.Core):
-    class Meta:
-        verbose_name = 'Пол'
-        verbose_name_plural = 'Пол'
-
-        def __str__(self):
-            return self.name[:15]
-
-
-class Age(core.models.Core):
-    class Meta:
-        verbose_name = 'Возраст'
-        verbose_name_plural = 'Возраста'
-
-        def __str__(self):
-            return self.name[:15]
-
-
-class Mass(core.models.Core):
-    mass_start = django.db.models.IntegerField(
-        unique=False,
-        null=True,
-        validators=[
-            django.core.validators.MinValueValidator(10),
-            django.core.validators.MaxValueValidator(1000),
-        ],
-    )
-    mass_end = django.db.models.IntegerField(
-        unique=False,
-        null=True,
-        validators=[
-            django.core.validators.MinValueValidator(10),
-            django.core.validators.MaxValueValidator(700),
-        ],
-    )
-    class Meta:
-        verbose_name = 'Весовая категория'
-        verbose_name_plural = 'Весовые котегории'
-
-        def __str__(self):
-            return self.name[:15]
-
-
-class Genage(core.models.Core):
-    age = django.db.models.ForeignKey(
-        'age',
-        on_delete=django.db.models.CASCADE,
-        verbose_name='Возраст',
-        help_text='Выберите Возраст',
-        related_name='catalog_age',
-        unique=False,
-        null=True,
-    )
-    gender = django.db.models.ForeignKey(
-        'gender',
-        on_delete=django.db.models.CASCADE,
-        verbose_name='Пол',
-        help_text='Выберите Пол',
-        related_name='catalog_gen',
-        unique=False,
-        null=True,
-    )
-
-    class Meta:
-        verbose_name = 'категория'
-        verbose_name_plural = 'категории'
-
-        def __str__(self):
-            return self.name[:15]
-
-
-class Discipline(core.models.Core):
-    gen_age = django.db.models.ManyToManyField(Genage)
-    mass_cat = django.db.models.ManyToManyField(Mass)
+# Модель для центрального ФСП
+class CentralFsp(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
 
     def __str__(self):
-        return self.name[:15]
-
-    class Meta:
-        verbose_name = 'категория'
-        verbose_name_plural = 'категории'
-
-        def __str__(self):
-            return self.name[:15]
+        return self.name
 
 
-def filter_select(obj):
-    return (
-        obj.filter(
-            is_published=True,
-            category__is_published=True,
-        )
-        .select_related(
-            Item.category.field.name,
-            Item.main_image.related.name,
-        )
-        .prefetch_related(
-            django.db.models.Prefetch(
-                Item.tags.field.name,
-                queryset=Tag.objects.published().only(
-                    Tag.name.field.name,
-                ),
-            ),
-        )
-    )
-
-
-class Range_m(core.models.Core):
-    class Meta:
-        verbose_name = 'Маштаб'
-        verbose_name_plural = 'Маштабы'
-
-        def __str__(self):
-            return self.name[:15]
-
-
-class Sport(core.models.Core):
-    discipline = django.db.models.ManyToManyField(
-        'discipline',
-        verbose_name='Дисциплина',
-        help_text='Выберите дисциплину',
-        related_name='catalog_sport',
-        unique=False,
-    )
+# Модель для региона
+class Region(models.Model):
+    name = models.CharField(max_length=255)
+    central_fsp = models.ForeignKey(CentralFsp, related_name='regions', on_delete=models.CASCADE)
+    representative_name = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.name[:15]
-
-    class Meta:
-        verbose_name = 'категория'
-        verbose_name_plural = 'категории'
+        return self.name
 
 
-class Time(core.models.Core):
-    start = django.db.models.DateTimeField(
-        'время начала',
-        unique=False,
-        null=True,
-    )
-    end = django.db.models.DateTimeField(
-        'время конца',
-        unique=False,
-        null=True,
-    )
+# Модель для общего уровня соревнований
+class CompetitionLevel(models.Model):
+    level_name = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.name[:15]
-
-    class Meta:
-        verbose_name = 'время'
-        verbose_name_plural = 'времена'
+        return self.level_name
 
 
-def order_only(obj):
-    return (
-        obj.order_by(
-            f'{Item.category.field.name}__{Category.name.field.name}',
-            Item.name.field.name,
-        )
-        .only(
-            Item.name.field.name,
-            Item.text.field.name,
-            Item.main_image.related.name,
-            f'{Item.category.field.name}__{Category.name.field.name}',
-            f'{Item.tags.field.name}__{Tag.name.field.name}',
-        )
-    )
+# Модель для соревнований
+class Competition(models.Model):
+    name = models.CharField(max_length=255)
+    level = models.ForeignKey(CompetitionLevel, related_name='competitions', on_delete=models.CASCADE)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=False, blank=True)
+    budget = models.IntegerField(null=True, blank=True)
 
-
-class ItemManager(django.db.models.Manager):
-    def published(self):
-        return (
-            order_only(filter_select(self.get_queryset()))
-        )
-
-    def on_main(self):
-        return (
-            self.get_queryset()
-            .filter(
-                is_on_main=True,
-            )
-            .order_by(
-                Item.name.field.name,
-            )
-        )
-
-
-class Item(core.models.Core):
-    objects = ItemManager()
-
-    sport = django.db.models.ForeignKey(
-        'discipline',
-        on_delete=django.db.models.CASCADE,
-        verbose_name='Дисциплина',
-        help_text='Выберите дисциплину',
-        related_name='catalog_item',
-        unique=False,
-        null=True,
-    )
-    created = django.db.models.DateTimeField(
-        'время создания',
-        auto_now_add=True,
-        unique=False,
-        null=True,
-    )
-    location = django.db.models.CharField(
-        unique=False,
-        null=True,
-    )
-    country = django.db.models.ForeignKey(
-        'country',
-        on_delete=django.db.models.CASCADE,
-        verbose_name='Страна',
-        help_text='Выберите Страна',
-        related_name='catalog_country',
-        unique=False,
-        null=True,
-    )
-    subject = django.db.models.ForeignKey(
-        'subject',
-        on_delete=django.db.models.CASCADE,
-        verbose_name='Субъект',
-        help_text='Выберите субект',
-        related_name='catalog_subject',
-        unique=False,
-        null=True,
-    )
-    town = django.db.models.ForeignKey(
-        'town',
-        on_delete=django.db.models.CASCADE,
-        verbose_name='Город',
-        help_text='Выберите город',
-        related_name='catalog_town',
-        unique=False,
-        null=True,
-    )
-    number = django.db.models.IntegerField(
-        unique=False,
-        null=True,
-        validators=[
-            django.core.validators.MinValueValidator(10),
-        ]
-    )
-    served = django.db.models.IntegerField(
-        unique=False,
-        null=True,
-        validators=[
-            django.core.validators.MaxValueValidator(700),
-            django.core.validators.MinValueValidator(10),
-        ]
-    )
-    time = django.db.models.ForeignKey(
-        'time',
-        on_delete=django.db.models.CASCADE,
-        verbose_name='Время',
-        help_text='Выберите Время',
-        related_name='catalog_time',
-        unique=False,
-        null=True,
-    )
-    alert = django_ckeditor_5.fields.CKEditor5Field(
-        'предупреждение',
-        help_text=('Опишите что нужно делать'),
-        unique=False,
-        null=True,
-    )
-    range_m = django.db.models.ForeignKey(
-        'range_m',
-        on_delete=django.db.models.CASCADE,
-        verbose_name='Страна',
-        help_text='Выберите Страна',
-        related_name='catalog_range_m',
-        unique=False,
-        null=True,
-    )
     def __str__(self):
-        return self.name[:15]
-
-    class Meta:
-        verbose_name = 'мероприятие'
-        verbose_name_plural = 'мероприятия'
-        default_related_name = 'items'
-
-        def __str__(self):
-            return self.name[:15]
+        return self.name
 
 
-__all__ = [
-    'Category',
-    'Tag',
-    'Item',
-    'Country'
-]
+# Модель для региональных соревнований
+class RegionalCompetition(models.Model):
+    competition = models.ForeignKey(Competition, related_name='regional_competitions', on_delete=models.CASCADE)
+    date = models.DateField(null=True, blank=True)
+    city = models.CharField(max_length=255)
+    region = models.ForeignKey(Region, related_name='regional_competitions', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.competition.name} - {self.city}"
+
+
+# Модель для всероссийских соревнований
+class NationwideCompetition(models.Model):
+    competition = models.ForeignKey(Competition, related_name='nationwide_competitions', on_delete=models.CASCADE)
+    date = models.DateField(null=True, blank=True)
+    city = models.CharField(max_length=255)
+    region = models.ForeignKey(Region, related_name='nationwide_competitions', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.competition.name} - {self.city}"
+
+
+# Модель для представителей регионов
+class Representative(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    region = models.ForeignKey(Region, related_name='representatives', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+
+# Модель для команд
+class Team(models.Model):
+    name = models.CharField(max_length=255)
+    number_of_members = models.PositiveIntegerField()
+    region = models.ForeignKey(Region, related_name='teams', on_delete=models.CASCADE)
+    competition = models.ForeignKey(Competition, related_name='teams', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+
+# Модель для атлетов
+class Athlete(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    password = models.CharField(max_length=255)  # Рекомендуется использовать шифрование паролей
+    registration_date = models.DateField(auto_now_add=True)
+    age = models.PositiveIntegerField(null=True, blank=True)
+    team = models.ForeignKey(Team, related_name='athletes', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+    
+# Модель для каждого вида спортивного программирования
+class SportProgrammingKind(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+    
+# Модель для видов спортивного программирования
+class SportProgrammingType(models.Model):
+    name = models.CharField(max_length=255)
+    regional_competition = models.ForeignKey(RegionalCompetition, related_name='sport_programming_types', on_delete=models.CASCADE, null=True, blank=True)
+    nationwide_competition = models.ForeignKey(NationwideCompetition, related_name='sport_programming_types', on_delete=models.CASCADE, null=True, blank=True)
+    programming_kinds = models.ManyToManyField(SportProgrammingKind, related_name='sport_programming_types', through='SportProgrammingType_programming_kinds')
+
+    def __str__(self):
+        return self.name
+
+class SportProgrammingType_programming_kinds(models.Model):
+    sport_programming_type = models.ForeignKey('SportProgrammingType', on_delete=models.CASCADE)
+    sport_programming_kind = models.ForeignKey('SportProgrammingKind', on_delete=models.CASCADE)

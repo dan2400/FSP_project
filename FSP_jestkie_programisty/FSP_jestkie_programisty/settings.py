@@ -15,6 +15,7 @@ from pathlib import Path
 import os
 
 import dotenv
+from django.conf.global_settings import EMAIL_USE_TLS
 
 dotenv.load_dotenv()
 
@@ -40,8 +41,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
-
-EMAIL_HOST_USER = os.getenv('EMAIL', 'yandex@yandex.ru')
+EMAIL_USE_TLS = False
+EMAIL_HOST_USER = MAIL
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD', 'somepassword')
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
@@ -64,7 +65,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_ckeditor_5',
-    'account',
     'sorl.thumbnail',
     'django_cleanup.apps.CleanupConfig',
 ]
@@ -79,8 +79,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'account.middleware.LocaleMiddleware',
-    'account.middleware.TimezoneMiddleware',
+
 ]
 
 
@@ -103,7 +102,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'account.context_processors.account',
             ],
         },
     },
@@ -315,14 +313,14 @@ CKEDITOR_5_CONFIGS = {
     },
 }
 
-EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-
 EMAIL_FILE_PATH = BASE_DIR / 'send_mail/'
 
 LOGIN_REDIRECT_URL = '/'
 
-#AUTHENTICATION_BACKENDS = [
-#    'login.backends.AuthBackend',
-#]
+AUTHENTICATION_BACKENDS = [
+    'login.backends.AuthBackend',
+]
 
-__all__ = []
+SECURE_CROSS_ORIGIN_OPENER_POLICY=None
+
+SESSION_COOKIE_SECURE=False
