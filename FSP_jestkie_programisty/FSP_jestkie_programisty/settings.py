@@ -69,7 +69,7 @@ INSTALLED_APPS = [
     'django_cleanup.apps.CleanupConfig',
 ]
 
-SITE_ID = 1
+SITE_ID = 2
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -318,5 +318,11 @@ CKEDITOR_5_CONFIGS = {
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 
 EMAIL_FILE_PATH = BASE_DIR / 'send_mail/'
+
+LOGIN_REDIRECT_URL = '/'
+
+#AUTHENTICATION_BACKENDS = [
+#    'login.backends.AuthBackend',
+#]
 
 __all__ = []

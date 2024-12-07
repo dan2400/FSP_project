@@ -70,12 +70,12 @@ def signup(request):
     }
 
     if request.method == 'POST' and form.is_valid():
-        user = login.models.AddRequest.create(email=form.cleaned_data["mail"])
+        user = login.models.AddRequest(email=form.cleaned_data["email"])
         send_mail(
-            f'Привет {form.cleaned_data["name"]}',
-            f'Перейдите по ссылке:/n{user.id}',
+            f'Привет {form.cleaned_data["username"]}',
+            f'Перейдите по ссылке:/n auth/confirm/{user.id}',
             django.conf.settings.MAIL,
-            [form.cleaned_data['mail']],
+            [form.cleaned_data['email']],
             fail_silently=True,
         )
         user.save()
@@ -90,3 +90,4 @@ def signup(request):
 
 def accept(request):
     template = 'registration/done.html'
+

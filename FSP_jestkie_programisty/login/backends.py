@@ -15,10 +15,10 @@ class AuthBackend(django.contrib.auth.backends.ModelBackend):
         except login.models.User.DoesNotExist:
             return None
         else:
-            if user.ckeck_password(password):
-                login.profile.attempts_count = 0
+            if user.check_password(password):
+                user.profile.attempts_count = 0
 
-                login.profile.save()
+                user.profile.save()
                 return user
             else:
                 user.profile.attempts_count += 1
@@ -31,6 +31,7 @@ class AuthBackend(django.contrib.auth.backends.ModelBackend):
                     user.save()
                     activate_url = django.utils.reverse(
                         'auth:reactivate', kwagrs={'pk': user.id}
+
                     )
 
                     django.core.mail.send_mail(

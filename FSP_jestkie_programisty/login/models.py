@@ -62,6 +62,7 @@ class User(django.contrib.auth.models.User):
 
 
 class Profile(django.db.models.Model):
+
     object = UserManager()
 
     def image_path(self, filename):
