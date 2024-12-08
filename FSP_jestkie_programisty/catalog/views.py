@@ -23,17 +23,14 @@ def item_detail(request, pk):
         regcomp = catalog.models.RegionalCompetition.objects.get(competition=pk)
     except catalog.models.RegionalCompetition.Content.DoesNotExist:
         regcomp = 'Не проходит'
-        date = regcomp.date.strftime("%Y-%m-%d %H:%M:%S")  # или другой формат
     try:
          natcomp = catalog.models.NationwideCompetition.objects.get(competition=pk)
     except catalog.models.NationwideCompetition.Content.DoesNotExist:
         natcomp = 'Не проходит'
-        date = natcomp.date.strftime("%Y-%m-%d %H:%M:%S")  # или другой формат
     context = {
         'item': item,
         'regcomp': regcomp,
         'natcomp': natcomp,
-        'datetime': date,
     }
     return render(request, template, context)
 

@@ -18,3 +18,7 @@ admin_1
 пароль
 admin
 Презентция: 'ФСП_Презинтация.pdf'
+добавьте поля для почты
+в .end
+EMAIL = <Ваш email>
+EMAIL_PASSWORD = <pw>
