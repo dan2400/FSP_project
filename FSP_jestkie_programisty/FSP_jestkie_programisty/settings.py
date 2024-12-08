@@ -315,7 +315,7 @@ CKEDITOR_5_CONFIGS = {
 
 EMAIL_FILE_PATH = BASE_DIR / 'send_mail/'
 
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/admin'
 
 AUTHENTICATION_BACKENDS = [
     'login.backends.AuthBackend',

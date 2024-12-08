@@ -1,5 +1,6 @@
 from django.db import models
 
+
 def item_directory_path(instance, filename):
     return f'catalog/{instance.item.id}/{uuid.uuid4()}-{filename}'
 
@@ -30,8 +31,24 @@ class CompetitionLevel(models.Model):
         return self.level_name
 
 
+class CompetitionManager(models.Manager):
+
+    def published(self):
+        return (
+            self.get_queryset()
+            .filter(
+                is_active=True,
+            )
+            .order_by(
+                Competition.name.field.name,
+            )
+        )
+
+
+
 # Модель для соревнований
 class Competition(models.Model):
+    objects = CompetitionManager()
     name = models.CharField(max_length=255)
     level = models.ForeignKey(CompetitionLevel, related_name='competitions', on_delete=models.CASCADE)
     description = models.TextField(blank=True)

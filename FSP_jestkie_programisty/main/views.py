@@ -3,11 +3,14 @@ import http
 from django.http import HttpResponse
 from django.shortcuts import render
 
+import catalog.models
+
 
 def main(request):
     template = 'main/index.html'
+    items = catalog.models.Competition.objects.published()
     context = {
-        'items': [],
+        'items': items,
     }
     return render(request, template, context)
 
@@ -17,146 +20,75 @@ def coffee(request):
 
 def parse(request):
     import requests
-    import fitz
+    from bs4 import BeautifulSoup
+    import datetime
 
-    import catalog.models
+    class RegionParser:  # парсер представителей регионов РФ
+        def __init__(self):
+            url = 'https://fsp-russia.com/region/regions/'
+            self.json = dict()
 
-    import dotenv
+            response = requests.get(url)
 
-    dotenv.load_dotenv()
+            soup = BeautifulSoup(response.text, 'lxml')
+            accordion = soup.find('div', class_='accordion')
+            region_blocks = accordion.find_all('div', class_='accordion-item')
+            data = soup.find('div', class_='contacts_info').find_all('div', class_="contact_td")[1].find_all('p',
+                                                                                                             class_='white_region')
+            self.json['г. Москва'] = [{'region_name': data[0].text, 'director': data[1].text, 'email': data[2].text}]
+            for block in region_blocks:
+                key = block.find('h4').text
+                self.json[key] = []
+                regions = block.find_all('div', class_='contact_td')
+                for region in regions:
+                    data = region.find_all('p', class_='white_region')
+                    self.json[key].append(
+                        {'region_name': data[0].text, 'director': data[1].text, 'email': data[2].text})
 
-    def check_new_block(s):
-        try:
-            if int(s) and s.startswith('2') and len(s) == 16:
-                return True
-        except ValueError:
-            return False
+    class CalendarParser:  # парсер календаря на ФСП
+        def __init__(self, city=''):
+            self.json = dict()
 
-    def extract_text(page_, result, index):
-        text_ = page_.extract_text()
-        result[index] = text_
+            for month in range(1, datetime.date.today().month + 1):
+                year = datetime.date.today().year
+                attr = f'?month={month}&year={year}&city={city}'
+                url = f'https://fsp-russia.com/calendar/{attr}'
 
-    def download_pdf_with_headers(url, save_path):
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
-            "Accept": "application/pdf",
-            "Referer": "https://google.com",
-        }
+                response = requests.get(url)
 
-        try:
-            response = requests.get(url, headers=headers, stream=True,
-                                    verify="etc/ssl/website.crt")
-            response.raise_for_status()
+                soup = BeautifulSoup(response.text, 'lxml')
+                events = soup.find_all('div', class_='event-item-hover')
+                for event in events:
+                    date = event.find(class_='date').text.strip('\n')
+                    try:
+                        self.json[date]
+                    except KeyError:
+                        self.json[date] = []
 
-            with open(save_path, 'wb') as pdf_file:
-                for chunk in response.iter_content(chunk_size=8192):
-                    pdf_file.write(chunk)
+                    location_block = event.find(class_='location')
+                    location = None
+                    if location_block:
+                        location = location_block.text.strip('\n')
 
-            print(f"PDF downloaded successfully and saved to {save_path}")
-        except requests.exceptions.RequestException as e:
-            print(f"Failed to download PDF: {e}")
+                    online_block = event.find(class_='online')
+                    online = None
+                    if online_block:
+                        online = online_block.text.strip('\n')
 
-    pdf_url = "https://storage.minsport.gov.ru/cms-uploads/cms/II_chast_EKP_2024_14_11_24_65c6deea36.pdf"
-    save_location = "static_dev/files/II_chast_EKP_2024_with_certificate.pdf"
-
-    download_pdf_with_headers(pdf_url, save_location)
-
-    pdf_path = save_location
-
-    doc = fitz.open(pdf_path)
-    text = ''
-    for page in doc:
-        text += page.get_text() + '\n'
-
-    arr = text.split('\n\n')
-
-    split_arr = []
-    for el in arr:
-        split_arr += el.split('\n')
-
-    new_arr = []
-    stack = []
-    database = dict()
-    sport_name = split_arr[19]
-    database[sport_name] = []
-    new_sport = False
-
-    for el in split_arr:
-        if el.startswith("Стр. ") or el.startswith("Основной состав") or el.startswith("Молодежный (резервный) состав"):
-            continue
-        if check_new_block(el):
-            if stack and stack[0] != '':
-                new_arr.append(stack)
-            stack = []
-        stack.append(el)
-
-    if stack:
-        new_arr.append(stack)
-    new_arr = new_arr[1:]
-    del new_arr[-1][-1]
-
-    for block in new_arr:
-        json_res = dict()
-        json_res['id'] = block[0]
-        json_res['sport_name'] = []
-        json_res['disciplines'] = []
-        json_res['date'] = []
-        i = 1
-        while block[i].isupper():
-            json_res['sport_name'].append(block[i])
-            i += 1
-        json_res['gen_age_block'] = block[i]
-        i += 1
-        while block[i][0].isupper():
-            json_res['disciplines'].append(block[i])
-            i += 1
-        while block[i][0].isnumeric():
-            json_res['date'].append(block[i])
-            i += 1
-        if not block[-1].isnumeric():
-            new_sport = True
-            next_sport_name = block[-1]
-            del block[-1]
-        json_res['location'] = block[i:-1]
-        json_res['participants'] = block[-1]
-        database[sport_name].append(json_res)
-        if new_sport:
-            database[next_sport_name] = []
-            new_sport = False
-            sport_name = str(next_sport_name)
-
-    def loc(id, lis):
-        if len(lis) == 2:
-            catalog.models.Item.objects.get_or_create(country__name=lis[0], subject__name=lis[1], town__name=lis[1],
-                                                       id=id)
-        else:
-            catalog.models.Item.objects.get_or_create(country__name=lis[0], subject__name=lis[1], town__name=lis[2],
-                                                       id=id)
-
-    for item in database:
-        print(item)
-        i, created_id = catalog.models.Item.objects.get_or_create(id=int(item['id']))
-        i = int(i)
-        num, created_num = catalog.models.Item.objects.get_or_create(number=item['participants'], id=i)
-        for sport in item['sport_name']:
-            catalog.models.Item.objects.get_or_create(sport__name=sport, id=i)
-        for discipline in item['discipline']:
-            catalog.models.Item.objects.get_or_create(sport__name=discipline, id=i)
-        if item['date'][0] and item['date'][1]:
-            catalog.models.Item.objects.get_or_create(time__start=item['date'][0], time__end=item['date'][1], id=i)
-        loc(i, item['location'])
-        bl = item['gen_age_block']
-        ak = bl.split()[-2]
-        if '-' in ak:
-            ak = ak.split('-')
-        elif 'от' in ak.lower():
-            ak = (ak, 200)
-        elif 'до' in ak.lower():
-            ak = (0, ak)
-        bl = ' '.join(ak[:-2])
-        for genage in bl.split(', '):
-            catalog.models.Item.objects.get_or_create(genage__name=genage, id=i)
-        catalog.models.Item.objects.get_or_create(genage__age__low=ak[0], genage__age__hight=ak[1], id=i)
+                    arr = event.find_all(class_='info')
+                    dis_par = [None, None]
+                    if arr:
+                        if len(arr) == 1:
+                            dis_par[0] = arr[0].text.strip('\n')
+                        elif len(arr) == 2:
+                            dis_par[0] = arr[0].text.strip('\n')
+                            dis_par[1] = arr[1].text.strip('\n')
+                    self.json[date].append({'name': event.select('div.name')[0].text.strip('\n'),
+                                            'online': online,
+                                            'location': location,
+                                            'discipline': dis_par[0],
+                                            'participants': dis_par[1]
+                                            })
 
     return HttpResponse('OK', status=http.HTTPStatus.OK)
 

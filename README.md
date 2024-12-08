@@ -12,3 +12,9 @@ python3 manage.py migrate
 для парсинга есть url parse/
 по url/login auth доступен вход
 и других
+Для загрузки фикстур ```python manage.py loaddata fixtures/data.json ```
+логин главному админу
+admin_1
+пароль
+admin
+Презентция: 'ФСП_Презинтация.pdf'

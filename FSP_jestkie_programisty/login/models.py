@@ -89,6 +89,11 @@ class Profile(django.db.models.Model):
         'попыток входа',
         default=0,
     )
+    work_place = django.db.models.ForeignKey(
+        catalog.models.Region,
+        related_name='work',
+        on_delete=django.db.models.CASCADE,
+    )
 
     def get_image_300x300(self):
         return sorl.thambnail.get_thumbnail(

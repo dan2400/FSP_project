@@ -46,9 +46,20 @@
                             {% trans "Feedback" %}
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if view_name == '/admin/' %}active" aria-current="page"
+                        {% else %}
+                            " href="/admin/"
+                        {% endif %}>
+                            {% trans "Admin" %}
+                        </a>
+                    </li>
                     {% if user.is_authenticated %}
                         <li>User: {{ user.get_username }}</li>
                         <li><a href="{% url 'logout'%}?next={{request.path}}">Logout</a></li>
+                        {% if user.profile.image %}
+                            <img class="lazyOwl" data-src="{{ user.profile.image.url }}">
+                        {% endif %}
                     {% else %}
                         <li><a href="{% url 'login'%}?next={{request.path}}">Login</a></li>
                     {% endif %}
