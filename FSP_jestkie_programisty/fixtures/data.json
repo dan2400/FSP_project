@@ -2760,9 +2760,7 @@
         "domain": "example.com",
         "name": "example.com"
     }
-}
-]
-[
+},
 {
     "model": "login.addrequest",
     "pk": 1,

@@ -1,5 +1,17 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}О проекте{% endblock %}
+<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
 {% block content %}
     <h1>О проекте</h1>
+  <video autoplay loop muted class="bgvideo" id="bgvideo_id">
+   <source src="{% static 'video/video.mp4' %}" type="video/mp4"></source>
+   <source src="{% static 'video/video.webm' %}" type="video/mp4"></source>
+  </video>
+    <p class="profile">
+        Мы разработчики любители из чувашии.<br>
+        Ны всё 2007-2008 годы рождения.<br>
+        Этот сайт создан для тренировки.<br>
+    </p>
 {% endblock %}

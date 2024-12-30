@@ -1,0 +1,22 @@
+body {
+  background: url('video.png');
+  background-size: cover;
+}
+
+.bgvideo {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  z-index: -9999;
+}
+
+.profile {
+  color: rgb(220, 229, 231);
+  text-align: center;
+  text-shadow: 3px;
+  background-color: grey;
+}
