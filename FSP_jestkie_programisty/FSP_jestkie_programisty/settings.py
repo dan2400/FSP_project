@@ -52,6 +52,7 @@ EMAIL_ADMIN = EMAIL_HOST_USER
 # Application definition
 
 INSTALLED_APPS = [
+    'ajax.apps.AjaxConfig',
     'login.apps.LoginConfig',
     'about.apps.AboutConfig',
     'catalog.apps.CatalogConfig',
